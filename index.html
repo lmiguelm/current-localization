@@ -3,6 +3,9 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin=""/>
     <title>Localização tempo real</title>
 
     <style>
@@ -17,27 +20,50 @@
         align-items: center;
         height: 100vh;
       }
+      #map {
+        height: 100%;
+        width: 100%;
+      }
     </style>
 
   </head>
 
   <body>
-    <button onclick="getCurrentLocation()" >Pegar minha localização</button>
-    <br><br>
-    <p>Latitude: <b id="latitude"></b></p>
-    <br>
-    <p>Longitude: <b id="longitude"></b></p>
+    <div id="map"></div>
   </body>
 
+   <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+      integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+      crossorigin=""></script>
   <script>
-    function getCurrentLocation() {
-      navigator.geolocation.getCurrentPosition(position => {
-        const latitude = document.getElementById('latitude');
-        const longitude = document.getElementById('longitude');
 
-        latitude.innerText = position.coords.latitude;
-        longitude.innerText = position.coords.longitude;
-      });
-    }
+    new Promise((resolve, reject) => {
+      if(navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          })
+        });
+      } else {
+        reject(alert('Seu navegador não tem suporte a localização'));
+      }
+    })
+    .then(({ latitude, longitude}) => {
+
+      console.log(latitude, longitude)
+    
+      const map = L.map('map').setView([latitude, longitude], 15);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      })
+      .addTo(map);
+
+      L.marker([latitude, longitude]).addTo(map)
+          .bindPopup('Você está aqui.')
+          .openPopup();
+    });
   </script>
 </html>
